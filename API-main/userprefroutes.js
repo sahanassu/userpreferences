@@ -8,11 +8,10 @@ router.post('/userPrefs/create', async (req, res) => {
     try {
         const { keyValues } = req.body.preferences;
 
-        // Check for duplicate keys
+        // Check for duplicate keys in the request
         const keySet = new Set();
         for (let i = 0; i < keyValues.length; i++) {
             if (keySet.has(keyValues[i].key)) {
-                console.log('Duplicate key found:', keyValues[i].key); 
                 return res.status(400).send({ error: 'Duplicate keys found in preferences!' });
             }
             keySet.add(keyValues[i].key);
@@ -22,10 +21,41 @@ router.post('/userPrefs/create', async (req, res) => {
         await userPref.save();
         res.status(201).send(userPref);
     } catch (error) {
-        console.error('Error:', error); 
+        console.error('Error:', error);
         res.status(400).send(error);
     }
 });
+
+// Add multiple key-value pairs to an existing user's preferences
+router.post('/userPrefs/add/:id/preferences', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const newKeyValues = req.body.keyValues;
+
+        const userPref = await UserPref.findById(userId);
+        if (!userPref) {
+            return res.status(404).send({ error: 'User not found!' });
+        }
+
+        // Check for duplicate keys in the request
+        const existingKeys = new Set(userPref.preferences.keyValues.map(pref => pref.key));
+        for (let i = 0; i < newKeyValues.length; i++) {
+            if (existingKeys.has(newKeyValues[i].key)) {
+                return res.status(400).send({ error: `Duplicate key found in preferences: ${newKeyValues[i].key}` });
+            }
+        }
+
+        // Add the new key-values
+        userPref.preferences.keyValues.push(...newKeyValues);
+
+        await userPref.save();
+        res.status(200).send(userPref);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send(error);
+    }
+});
+
 
 // Read all user preferences
 router.get('/userPrefs/getAll', async (req, res) => {

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const UserPreferences = () => {
   const [userPreferences, setUserPreferences] = useState(null);
-  const userId = '6677ae1a28787e4a7a1681e9'; 
+  const userId = '667a6424b2de1ef3a5653b0f'; 
 
   useEffect(() => {
     const fetchUserPreferences = async () => {
