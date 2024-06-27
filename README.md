@@ -4,7 +4,7 @@ Description
 This project consists of a backend API and a frontend application for managing user preferences. The backend is built with Node.js, Express, and MongoDB, while the frontend is developed using React.
 Backend API
 
-The API provides endpoints to create, read, update, and delete user preferences. Each user preference includes multiple key-value pairs, with validation to prevent duplicate keys.
+The API provides endpoints to create, read, update, and delete user preferences, with validation to prevent duplicate entries.
 Endpoints
 
     Create User Preference
@@ -40,4 +40,4 @@ Features
     Display user preferences
     Create new user preferences
     Update existing user preferences
-    Add multiple key-value pairs to a user's preferences
+   
