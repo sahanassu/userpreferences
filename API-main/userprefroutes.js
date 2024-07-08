@@ -3,12 +3,16 @@ const mongoose = require('mongoose');
 const UserPref = require('./schema'); 
 const router = express.Router();
 
+// Middleware for CORS
+const cors = require('cors');
+router.use(cors());
+
 // Create a new user preference
 router.post('/userPrefs/create', async (req, res) => {
     try {
         const { keyValues } = req.body.preferences;
 
-        // Check for duplicate keys in the request
+        // Check for duplicate keys
         const keySet = new Set();
         for (let i = 0; i < keyValues.length; i++) {
             if (keySet.has(keyValues[i].key)) {
@@ -37,7 +41,7 @@ router.post('/userPrefs/add/:id/preferences', async (req, res) => {
             return res.status(404).send({ error: 'User not found!' });
         }
 
-        // Check for duplicate keys in the request
+        // Check for duplicate keys
         const existingKeys = new Set(userPref.preferences.keyValues.map(pref => pref.key));
         for (let i = 0; i < newKeyValues.length; i++) {
             if (existingKeys.has(newKeyValues[i].key)) {
@@ -45,9 +49,7 @@ router.post('/userPrefs/add/:id/preferences', async (req, res) => {
             }
         }
 
-        // Add the new key-values
         userPref.preferences.keyValues.push(...newKeyValues);
-
         await userPref.save();
         res.status(200).send(userPref);
     } catch (error) {
@@ -55,7 +57,6 @@ router.post('/userPrefs/add/:id/preferences', async (req, res) => {
         res.status(500).send(error);
     }
 });
-
 
 // Read all user preferences
 router.get('/userPrefs/getAll', async (req, res) => {
@@ -80,38 +81,31 @@ router.get('/userPrefs/get/:id', async (req, res) => {
     }
 });
 
-// Update a specific key-value preference by user ID and key
-router.patch('/userPrefs/update/:id/preferences', async (req, res) => {
-    const updates = req.body.keyValues;
+
+// Update a specific key-value preference by user ID
+router.patch("/userPrefs/update/:id", async (req, res) => {
+  try {
+    const updates = req.body.preferences.keyValues;
 
     if (!Array.isArray(updates)) {
-        return res.status(400).send({ error: 'Invalid update parameters!' });
+      return res.status(400).send({ error: "Invalid update parameters!" });
+    }
+    const userPref = await UserPref.findById(req.params.id);
+    if (!userPref) {
+      return res.status(404).send({ error: "UserPref not found!" });
     }
 
-    try {
-        const userPref = await UserPref.findById(req.params.id);
-        if (!userPref) {
-            return res.status(404).send({ error: 'UserPref not found!' });
-        }
-
-        updates.forEach(update => {
-            const { key, value } = update;
-            const prefIndex = userPref.preferences.keyValues.findIndex(pref => pref.key === key);
-            if (prefIndex !== -1) {
-                userPref.preferences.keyValues[prefIndex].value = value;
-            } else {
-                userPref.preferences.keyValues.push({ key, value });
-            }
-        });
-
-        await userPref.save();
-        res.status(200).send(userPref);
-    } catch (error) {
-        res.status(400).send(error);
-    }
+    userPref.preferences.keyValues = updates;
+    await userPref.save();
+    res.status(200).send(userPref);
+  } catch (error) {
+    res.status(400).send(error);
+  }
 });
 
-// Delete a single preference of a UserPreference by ID
+
+
+// Delete a single preference of a UserPreference by ID and key
 router.delete('/userPrefs/delete/:userId/preferences/:key', async (req, res) => {
     const { userId, key } = req.params;
 
@@ -127,7 +121,6 @@ router.delete('/userPrefs/delete/:userId/preferences/:key', async (req, res) => 
         }
 
         userPref.preferences.keyValues.splice(prefIndex, 1); // Remove the specific key-value pair
-
         await userPref.save();
         res.status(200).send(userPref);
     } catch (error) {
