@@ -90,6 +90,14 @@ const UserPreferences = () => {
       }
     }
 
+    // Mark all duplicate keys with an error
+    for (let i = 0; i < updatedKeyValues.length; i++) {
+      const { key } = updatedKeyValues[i];
+      if (key && updatedKeyValues.filter(kv => kv.key === key).length > 1) {
+        updatedKeyValues[i].keyError = 'Duplicate key found';
+      }
+    }
+
     setKeyValues(updatedKeyValues);
     return valid;
   };
