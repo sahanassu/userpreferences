@@ -48,12 +48,8 @@ const UserPreferences = () => {
   const handleChangeKeyValue = (index, field, value) => {
     const updatedKeyValues = [...keyValues];
     updatedKeyValues[index][field] = value;
-    if (field === 'key') {
-      updatedKeyValues[index].keyError = '';
-    } else if (field === 'value') {
-      updatedKeyValues[index].valueError = '';
-    }
     setKeyValues(updatedKeyValues);
+    validateKeyValues();
   };
 
   const handleDeleteKeyValue = (index) => {
@@ -65,20 +61,27 @@ const UserPreferences = () => {
   };
 
   const validateKeyValues = () => {
-    const keySet = new Set();
+    const keyCount = {};
     const updatedKeyValues = [...keyValues];
     let valid = true;
 
+    // Count occurrences of each key
+    updatedKeyValues.forEach(({ key }) => {
+      if (key) {
+        keyCount[key] = (keyCount[key] || 0) + 1;
+      }
+    });
+
+    // Validate keys and values, mark duplicates
     for (let i = 0; i < updatedKeyValues.length; i++) {
       const { key, value } = updatedKeyValues[i];
       if (!key) {
         updatedKeyValues[i].keyError = 'Key is required';
         valid = false;
-      } else if (keySet.has(key)) {
+      } else if (keyCount[key] > 1) {
         updatedKeyValues[i].keyError = 'Duplicate key found';
         valid = false;
       } else {
-        keySet.add(key);
         updatedKeyValues[i].keyError = '';
       }
 
@@ -87,14 +90,6 @@ const UserPreferences = () => {
         valid = false;
       } else {
         updatedKeyValues[i].valueError = '';
-      }
-    }
-
-    // Mark all duplicate keys with an error
-    for (let i = 0; i < updatedKeyValues.length; i++) {
-      const { key } = updatedKeyValues[i];
-      if (key && updatedKeyValues.filter(kv => kv.key === key).length > 1) {
-        updatedKeyValues[i].keyError = 'Duplicate key found';
       }
     }
 
