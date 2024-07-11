@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Drawer, Input, Space, message, Table, List, Typography, Row, Col } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { Button, Space, message, List, Typography, Row, Col } from 'antd';
 import axios from 'axios';
+import PreferencesDrawer from './PreferencesDrawer';
+import PreferencesList from './PreferencesList';
 
 const UserPreferences = () => {
   const [userPreferences, setUserPreferences] = useState(null);
@@ -138,48 +139,6 @@ const UserPreferences = () => {
     }
   };
 
-  const columns = [
-    {
-      title: 'Key',
-      dataIndex: 'key',
-      key: 'key',
-      render: (text, record, index) => (
-        <>
-          <Input
-            style={{ paddingLeft: 10 }}
-            placeholder="Key"
-            value={record.key}
-            onChange={(e) => handleChangeKeyValue(index, 'key', e.target.value)}
-          />
-          {record.keyError && <Typography.Text type="danger">{record.keyError}</Typography.Text>}
-        </>
-      ),
-    },
-    {
-      title: 'Value',
-      dataIndex: 'value',
-      key: 'value',
-      render: (text, record, index) => (
-        <>
-          <Input
-            style={{ paddingLeft: 10 }}
-            placeholder="Value"
-            value={record.value}
-            onChange={(e) => handleChangeKeyValue(index, 'value', e.target.value)}
-          />
-          {record.valueError && <Typography.Text type="danger">{record.valueError}</Typography.Text>}
-        </>
-      ),
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (text, record, index) => (
-        <Button type="link" danger icon={<CloseOutlined />} onClick={() => handleDeleteKeyValue(index)} />
-      ),
-    },
-  ];
-
   return (
     <div>
       {userPreferences && (
@@ -195,55 +154,22 @@ const UserPreferences = () => {
               </Button>
             </Space>
           </div>
-          <List
-            dataSource={userPreferences.preferences.keyValues}
-            renderItem={(item) => (
-              <List.Item>
-                <Row style={{ width: '100%' }}>
-                  <Col span={2}>
-                    <Typography.Text>{item.key}</Typography.Text>
-                  </Col>
-                  <Col span={1}>
-                    <Typography.Text>:</Typography.Text>
-                  </Col>
-                  <Col span={15}>
-                    <Typography.Text>{item.value}</Typography.Text>
-                  </Col>
-                </Row>
-              </List.Item>
-            )}
-          />
+          <PreferencesList preferences={userPreferences.preferences.keyValues} />
         </div>
       )}
 
-      <Drawer
-        title={isEditing ? 'Edit Preferences' : 'Add New Preferences'}
-        placement="right"
-        closable={false}
-        onClose={closeDrawer}
-        visible={drawerVisible}
-        width={600}
-      >
-        <Button onClick={handleAddKeyValue} style={{ marginBottom: 16 }}>
-          Add Key-Value
-        </Button>
-
-        <Table
-          columns={columns}
-          dataSource={keyValues}
-          pagination={false}
-          rowKey={(record, index) => index}
-        />
-
-        <Space style={{ marginTop: 16 }}>
-          <Button type="primary" onClick={isEditing ? handleUpdatePreferences : handleSavePreferences}>
-            {isEditing ? 'Update' : 'Save'}
-          </Button>
-          <Button onClick={closeDrawer}>
-            Cancel
-          </Button>
-        </Space>
-      </Drawer>
+      <PreferencesDrawer
+        drawerVisible={drawerVisible}
+        closeDrawer={closeDrawer}
+        keyValues={keyValues}
+        setKeyValues={setKeyValues}
+        handleAddKeyValue={handleAddKeyValue}
+        handleChangeKeyValue={handleChangeKeyValue}
+        handleDeleteKeyValue={handleDeleteKeyValue}
+        isEditing={isEditing}
+        handleSavePreferences={handleSavePreferences}
+        handleUpdatePreferences={handleUpdatePreferences}
+      />
     </div>
   );
 };
