@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Space, message, List, Typography, Row, Col } from 'antd';
+import { Button, Space, message } from 'antd';
 import axios from 'axios';
 import PreferencesDrawer from './PreferencesDrawer';
 import PreferencesList from './PreferencesList';
@@ -102,9 +102,9 @@ const UserPreferences = () => {
     if (!validateKeyValues()) return;
 
     try {
-      await axios.post(`http://localhost:3000/userPrefs/add/${userId}/preferences`, { keyValues });
+      const response = await axios.post(`http://localhost:3000/userPrefs/add/${userId}/preferences`, { keyValues });
       message.success('Preferences saved successfully!');
-      fetchUserPreferences(); // Fetch updated data after saving
+      setUserPreferences(response.data); // Update state with new data
       closeDrawer(); // Close the drawer after saving
     } catch (error) {
       console.error('Error saving preferences:', error);
@@ -129,9 +129,9 @@ const UserPreferences = () => {
     }
 
     try {
-      await axios.patch(`http://localhost:3000/userPrefs/update/${userId}`, { preferences: { keyValues: updates } });
+      const response = await axios.patch(`http://localhost:3000/userPrefs/update/${userId}`, { preferences: { keyValues: updates } });
       message.success('Preferences updated successfully!');
-      fetchUserPreferences();
+      setUserPreferences(response.data); // Update state with new data
       closeDrawer();
     } catch (error) {
       console.error('Error updating preferences:', error);
