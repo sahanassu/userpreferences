@@ -25,3 +25,4 @@ const PreferencesList = ({ preferences }) => {
 };
 
 export default PreferencesList;
+  
