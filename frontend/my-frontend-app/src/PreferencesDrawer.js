@@ -20,15 +20,12 @@ const PreferencesDrawer = ({
       dataIndex: 'key',
       key: 'key',
       render: (text, record, index) => (
-        <>
-          <Input
-            style={{ paddingLeft: 10 }}
-            placeholder="Key"
-            value={record.key}
-            onChange={(e) => handleChangeKeyValue(index, 'key', e.target.value)}
-          />
-          {record.keyError && <Typography.Text type="danger">{record.keyError}</Typography.Text>}
-        </>
+        <Input
+          style={{ minWidth: 150 }}
+          placeholder="Key"
+          value={record.key}
+          onChange={(e) => handleChangeKeyValue(index, 'key', e.target.value)}
+        />
       ),
     },
     {
@@ -36,15 +33,12 @@ const PreferencesDrawer = ({
       dataIndex: 'value',
       key: 'value',
       render: (text, record, index) => (
-        <>
-          <Input
-            style={{ paddingLeft: 10 }}
-            placeholder="Value"
-            value={record.value}
-            onChange={(e) => handleChangeKeyValue(index, 'value', e.target.value)}
-          />
-          {record.valueError && <Typography.Text type="danger">{record.valueError}</Typography.Text>}
-        </>
+        <Input
+          style={{ minWidth: 150 }}
+          placeholder="Value"
+          value={record.value}
+          onChange={(e) => handleChangeKeyValue(index, 'value', e.target.value)}
+        />
       ),
     },
     {

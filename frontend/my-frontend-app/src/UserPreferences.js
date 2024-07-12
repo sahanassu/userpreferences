@@ -10,18 +10,25 @@ const UserPreferences = () => {
   const [keyValues, setKeyValues] = useState([{ key: '', value: '', keyError: '', valueError: '' }]);
   const [isEditing, setIsEditing] = useState(false);
   const [deletedKeys, setDeletedKeys] = useState([]);
+  const [loading, setLoading] = useState(true);
   const userId = '667a6424b2de1ef3a5653b0f';
 
   useEffect(() => {
     fetchUserPreferences();
-  }, [userId]);
+  }, []);
 
   const fetchUserPreferences = async () => {
     try {
+      setLoading(true); // Start loading
       const response = await axios.get(`http://localhost:3000/userPrefs/get/${userId}`);
-      setUserPreferences(response.data);
+      // Introduce a delay to ensure loading indicator is visible for at least 0.3 seconds
+      setTimeout(() => {
+        setUserPreferences(response.data);
+        setLoading(false); // Stop loading
+      }, 300);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setLoading(false); // Stop loading in case of error
     }
   };
 
@@ -104,7 +111,13 @@ const UserPreferences = () => {
     try {
       const response = await axios.post(`http://localhost:3000/userPrefs/add/${userId}/preferences`, { keyValues });
       message.success('Preferences saved successfully!');
-      setUserPreferences(response.data); // Update state with new data
+      // Update state with new data
+      setUserPreferences((prevPreferences) => ({
+        ...prevPreferences,
+        preferences: {
+          keyValues: [...(prevPreferences.preferences.keyValues || []), ...keyValues]
+        }
+      }));
       closeDrawer(); // Close the drawer after saving
     } catch (error) {
       console.error('Error saving preferences:', error);
@@ -117,21 +130,13 @@ const UserPreferences = () => {
 
     const updates = keyValues.map(({ key, value }) => ({ key, value }));
 
-    // Delete preferences marked for deletion
-    for (let key of deletedKeys) {
-      try {
-        await axios.delete(`http://localhost:3000/userPrefs/delete/${userId}/preferences/${key}`);
-      } catch (error) {
-        console.error('Error deleting preference:', error);
-        message.error('Failed to delete preference.');
-        return;
-      }
-    }
-
     try {
-      const response = await axios.patch(`http://localhost:3000/userPrefs/update/${userId}`, { preferences: { keyValues: updates } });
+      const response = await axios.patch(`http://localhost:3000/userPrefs/update/${userId}`, {
+        preferences: { keyValues: updates, deletedKeys }
+      });
       message.success('Preferences updated successfully!');
-      setUserPreferences(response.data); // Update state with new data
+      // Update state with new data
+      setUserPreferences(response.data);
       closeDrawer();
     } catch (error) {
       console.error('Error updating preferences:', error);
@@ -141,35 +146,41 @@ const UserPreferences = () => {
 
   return (
     <div>
-      {userPreferences && (
-        <div style={{ marginLeft: 16, marginTop: 19 }}>
-          <h2>User's Preferences</h2>
-          <div style={{ marginBottom: 16 }}>
-            <Space>
-              <Button type="primary" onClick={() => showDrawer(false)}>
-                Add Preferences
-              </Button>
-              <Button type="primary" onClick={() => showDrawer(true)} disabled={!userPreferences}>
-                Edit Preferences
-              </Button>
-            </Space>
-          </div>
-          <PreferencesList preferences={userPreferences.preferences.keyValues} />
-        </div>
-      )}
+      {loading ? (
+        <p>Loading....</p>
+      ) : (
+        <>
+          {userPreferences && (
+            <div style={{ marginLeft: 16, marginTop: 19 }}>
+              <h2>User's Preferences</h2>
+              <div style={{ marginBottom: 16 }}>
+                <Space>
+                  <Button type="primary" onClick={() => showDrawer(false)}>
+                    Add Preferences
+                  </Button>
+                  <Button type="primary" onClick={() => showDrawer(true)} disabled={!userPreferences}>
+                    Edit Preferences
+                  </Button>
+                </Space>
+              </div>
+              <PreferencesList preferences={userPreferences.preferences.keyValues} />
+            </div>
+          )}
 
-      <PreferencesDrawer
-        drawerVisible={drawerVisible}
-        closeDrawer={closeDrawer}
-        keyValues={keyValues}
-        setKeyValues={setKeyValues}
-        handleAddKeyValue={handleAddKeyValue}
-        handleChangeKeyValue={handleChangeKeyValue}
-        handleDeleteKeyValue={handleDeleteKeyValue}
-        isEditing={isEditing}
-        handleSavePreferences={handleSavePreferences}
-        handleUpdatePreferences={handleUpdatePreferences}
-      />
+          <PreferencesDrawer
+            drawerVisible={drawerVisible}
+            closeDrawer={closeDrawer}
+            keyValues={keyValues}
+            setKeyValues={setKeyValues}
+            handleAddKeyValue={handleAddKeyValue}
+            handleChangeKeyValue={handleChangeKeyValue}
+            handleDeleteKeyValue={handleDeleteKeyValue}
+            isEditing={isEditing}
+            handleSavePreferences={handleSavePreferences}
+            handleUpdatePreferences={handleUpdatePreferences}
+          />
+        </>
+      )}
     </div>
   );
 };
